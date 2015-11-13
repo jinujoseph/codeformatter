@@ -4,9 +4,6 @@
 using System.Diagnostics;
 using System.Linq;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.DotNet.CodeFormatting.Rules
 {
@@ -28,7 +25,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
         private SyntaxNode ProcessUsing(SyntaxNode syntaxRoot)
         {
-            var firstUsing = syntaxRoot.DescendantNodesAndSelf().OfType<UsingDirectiveSyntax>().FirstOrDefault();
+            object firstUsing = syntaxRoot.DescendantNodesAndSelf().OfType<UsingDirectiveSyntax>().FirstOrDefault();
             if (firstUsing == null)
             {
                 return syntaxRoot;
@@ -39,16 +36,16 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
         private SyntaxNode ProcessNamespace(SyntaxNode syntaxRoot)
         {
-            var firstNamespace = syntaxRoot.DescendantNodesAndSelf().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
+            object firstNamespace = syntaxRoot.DescendantNodesAndSelf().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
             if (firstNamespace == null)
             {
                 return syntaxRoot;
             }
 
-            var list = firstNamespace.GetLeadingTrivia();
+            object list = firstNamespace.GetLeadingTrivia();
             if (list.Count == 0)
             {
-                var newLine = SyntaxUtil.GetBestNewLineTrivia(firstNamespace);
+                SyntaxTrivia newLine = SyntaxUtil.GetBestNewLineTrivia(firstNamespace);
                 list = list.Add(newLine);
                 return syntaxRoot.ReplaceNode(firstNamespace, firstNamespace.WithLeadingTrivia(list));
             }
@@ -75,7 +72,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 return syntaxRoot;
             }
 
-            var newTriviaList = GetNewLeadingTrivia(node);
+            SyntaxTriviaList newTriviaList = GetNewLeadingTrivia(node);
             if (newTriviaList == node.GetLeadingTrivia())
             {
                 return syntaxRoot;
@@ -90,10 +87,10 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
         /// </summary>
         private SyntaxTriviaList GetNewLeadingTrivia(SyntaxNode node)
         {
-            var list = node.GetLeadingTrivia();
+            object list = node.GetLeadingTrivia();
             var searchIndex = 0;
-            var newLineTrivia = SyntaxUtil.GetBestNewLineTrivia(node);
-            var prev = node.FindPreviousNodeInParent();
+            SyntaxTrivia newLineTrivia = SyntaxUtil.GetBestNewLineTrivia(node);
+            SyntaxNode prev = node.FindPreviousNodeInParent();
 
             if (prev == null)
             {
@@ -140,21 +137,20 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             const int StateNone = 0;
             const int StateEol = 1;
             const int StateBlankLine = 2;
-
-            var state = StateEol;
-            var index = startIndex;
-            var eolIndex = startIndex - 1;
+            int state = StateEol;
+            int index = startIndex;
+            int eolIndex = startIndex - 1;
 
             while (index < list.Count)
             {
-                var current = list[index];
+                object current = list[index];
                 if (current.IsKind(SyntaxKind.WhitespaceTrivia))
                 {
                     index++;
                     continue;
                 }
 
-                var isStateAnyEol = (state == StateEol || state == StateBlankLine);
+                bool isStateAnyEol = (state == StateEol || state == StateBlankLine);
                 if (isStateAnyEol && current.IsKind(SyntaxKind.EndOfLineTrivia))
                 {
                     state = StateBlankLine;

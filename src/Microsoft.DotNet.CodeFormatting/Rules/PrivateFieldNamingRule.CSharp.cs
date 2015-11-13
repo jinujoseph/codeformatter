@@ -4,9 +4,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.DotNet.CodeFormatting.Rules
 {
@@ -31,12 +28,12 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
         /// </summary>
         internal sealed class CSharpPrivateFieldAnnotationsRewriter : CSharpSyntaxRewriter
         {
-            private int _count;
+            private readonly int _count;
 
             internal static SyntaxNode AddAnnotations(SyntaxNode node, out int count)
             {
                 var rewriter = new CSharpPrivateFieldAnnotationsRewriter();
-                var newNode = rewriter.Visit(node);
+                object newNode = rewriter.Visit(node);
                 count = rewriter._count;
                 return newNode;
             }
@@ -47,7 +44,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 if (NeedsRewrite(node, out isInstance))
                 {
                     var list = new List<VariableDeclaratorSyntax>(node.Declaration.Variables.Count);
-                    foreach (var v in node.Declaration.Variables)
+                    foreach (object v in node.Declaration.Variables)
                     {
                         if (IsGoodPrivateFieldName(v.Identifier.Text, isInstance))
                         {
@@ -60,7 +57,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                         }
                     }
 
-                    var declaration = node.Declaration.WithVariables(SyntaxFactory.SeparatedList(list));
+                    object declaration = node.Declaration.WithVariables(SyntaxFactory.SeparatedList(list));
                     node = node.WithDeclaration(declaration);
 
                     return node;
@@ -76,7 +73,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                     return false;
                 }
 
-                foreach (var v in fieldSyntax.Declaration.Variables)
+                foreach (object v in fieldSyntax.Declaration.Variables)
                 {
                     if (!IsGoodPrivateFieldName(v.Identifier.ValueText, isInstance))
                     {
@@ -91,7 +88,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             {
                 var isPrivate = true;
                 isInstance = true;
-                foreach (var modifier in fieldSyntax.Modifiers)
+                foreach (object modifier in fieldSyntax.Modifiers)
                 {
                     switch (modifier.Kind())
                     {

@@ -103,11 +103,11 @@ namespace Microsoft.DotNet.CodeFormatter.Analyzers
 
         private void CheckForAssignment(SyntaxNodeAnalysisContext context)
         {
-            ExpressionSyntax node = (context.Node as AssignmentExpressionSyntax)?.Left ?? 
+            ExpressionSyntax node = (context.Node as AssignmentExpressionSyntax)?.Left ??
                                     (context.Node as PrefixUnaryExpressionSyntax)?.Operand ??
                                     (context.Node as PostfixUnaryExpressionSyntax)?.Operand;
             CheckForFieldWrite(node, context.SemanticModel);
-        } 
+        }
 
         private void CheckForRefOrOutParameter(SyntaxNodeAnalysisContext context)
         {
