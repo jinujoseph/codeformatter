@@ -7,10 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Formatting;
-using Microsoft.CodeAnalysis.VisualBasic;
 
 namespace Microsoft.DotNet.CodeFormatting.Rules
 {
@@ -39,15 +35,14 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             if (!_options.PreprocessorConfigurations.IsDefaultOrEmpty)
             {
-                var project = document.Project;
-                var parseOptions = document.Project.ParseOptions;
-                foreach (var configuration in _options.PreprocessorConfigurations)
+                object project = document.Project;
+                object parseOptions = document.Project.ParseOptions;
+                foreach (string[] configuration in _options.PreprocessorConfigurations)
                 {
                     var list = new List<string>(configuration.Length + 1);
                     list.AddRange(configuration);
                     list.Add(FormattingEngineImplementation.TablePreprocessorSymbolName);
-
-                    var newParseOptions = WithPreprocessorSymbols(parseOptions, list);
+                    ParseOptions newParseOptions = WithPreprocessorSymbols(parseOptions, list);
                     document = project.WithParseOptions(newParseOptions).GetDocument(document.Id);
                     document = await Formatter.FormatAsync(document, cancellationToken: cancellationToken);
                 }

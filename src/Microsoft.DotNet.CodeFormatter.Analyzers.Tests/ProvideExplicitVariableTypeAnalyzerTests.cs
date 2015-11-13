@@ -32,7 +32,7 @@ class C1
         int[][] z = new[] { new[] { 1, 2, 3 }, new[] { 4, 5, 6 } };
     }
 }";
-            const string expected = input; 
+            const string expected = input;
             Verify(input, expected, runFormatter: false);
         }
 
