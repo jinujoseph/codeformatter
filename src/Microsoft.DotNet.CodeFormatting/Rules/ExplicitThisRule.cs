@@ -4,10 +4,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Simplification;
 
 namespace Microsoft.DotNet.CodeFormatting.Rules
 {
@@ -38,7 +34,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             public override SyntaxNode VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
             {
                 node = (MemberAccessExpressionSyntax)base.VisitMemberAccessExpression(node);
-                var name = node.Name.Identifier.ValueText;
+                object name = node.Name.Identifier.ValueText;
                 if (node.Expression != null &&
                     node.Expression.Kind() == SyntaxKind.ThisExpression &&
                     IsPrivateField(node))
@@ -57,7 +53,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                     _semanticModel = _document.GetSemanticModelAsync(_cancellationToken).Result;
                 }
 
-                var symbolInfo = _semanticModel.GetSymbolInfo(memberSyntax, _cancellationToken);
+                object symbolInfo = _semanticModel.GetSymbolInfo(memberSyntax, _cancellationToken);
                 if (symbolInfo.Symbol != null && symbolInfo.Symbol.Kind == SymbolKind.Field)
                 {
                     var field = (IFieldSymbol)symbolInfo.Symbol;
@@ -71,7 +67,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
         public async Task<SyntaxNode> ProcessAsync(Document document, SyntaxNode syntaxNode, CancellationToken cancellationToken)
         {
             var rewriter = new ExplicitThisRewriter(document, cancellationToken);
-            var newNode = rewriter.Visit(syntaxNode);
+            object newNode = rewriter.Visit(syntaxNode);
             if (!rewriter.AddedAnnotations)
             {
                 return syntaxNode;

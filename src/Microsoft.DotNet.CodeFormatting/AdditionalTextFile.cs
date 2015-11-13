@@ -2,14 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Threading;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.DotNet.CodeFormatting
 {
     internal class AdditionalTextFile : AdditionalText
     {
-        private string _path;
+        private readonly string _path;
         public AdditionalTextFile(string path)
         {
             _path = path;

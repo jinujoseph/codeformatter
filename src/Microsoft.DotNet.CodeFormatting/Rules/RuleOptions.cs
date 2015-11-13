@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Composition;
 
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.DotNet.CodeFormatting.Rules;

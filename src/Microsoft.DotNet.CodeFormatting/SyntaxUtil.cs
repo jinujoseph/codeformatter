@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System.Linq;
 
 namespace Microsoft.DotNet.CodeFormatting
@@ -51,7 +49,7 @@ namespace Microsoft.DotNet.CodeFormatting
 
         private static bool TryGetExistingNewLine(SyntaxTriviaList list, out SyntaxTrivia newLineTrivia)
         {
-            foreach (var trivia in list)
+            foreach (object trivia in list)
             {
                 if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
                 {
@@ -94,7 +92,7 @@ namespace Microsoft.DotNet.CodeFormatting
         /// </summary>
         internal static SyntaxNode FindPreviousNodeInParent(this SyntaxNode node)
         {
-            var parent = node.Parent;
+            object parent = node.Parent;
             if (parent == null)
             {
                 return null;

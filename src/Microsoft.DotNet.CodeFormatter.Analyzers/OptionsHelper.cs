@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.CodeFormatter.Analyzers
             //       be updated on adding a new check, we need to expose the analyzer name on an appropriate interface.
             //       Retrieving each of these bools populates the property bag with the default value of 'true'
             bool enabled;
-            
+
             foreach (string analyzerName in AllAnalyzerNames)
             {
                 enabled = allOptions.GetProperty(BuildDefaultEnabledProperty(analyzerName));
@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.CodeFormatter.Analyzers
         internal static IEnumerable<string> AllAnalyzerNames = new string[] {
             ExplicitThisAnalyzer.AnalyzerName,
             OptimizeNamespaceImportsAnalyzer.AnalyzerName,
-            ProvideExplicitVariableTypeAnalyzer.AnalyzerName, 
+            ProvideExplicitVariableTypeAnalyzer.AnalyzerName,
             UnwrittenWritableFieldAnalyzer.AnalyzerName
         };
     }

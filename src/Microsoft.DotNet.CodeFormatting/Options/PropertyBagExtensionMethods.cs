@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.Options
 
             foreach (string key in tokens)
             {
-                object property = propertyBag[key];                
+                object property = propertyBag[key];
 
                 StringSet stringSet = property as StringSet;
                 if (stringSet != null)
@@ -193,7 +193,7 @@ namespace Microsoft.CodeAnalysis.Options
 
             return type;
         }
-        
+
         private static void LoadStringSet(StringSet set, XmlReader reader)
         {
             reader.ReadStartElement(PROPERTY_ID);
@@ -247,6 +247,6 @@ namespace Microsoft.CodeAnalysis.Options
         private const string STRING_SET_ID = "StringSet";
         internal const string PROPERTIES_ID = "Properties";
 
-        private static HybridDictionary s_typesCache = new HybridDictionary();
+        private static readonly HybridDictionary s_typesCache = new HybridDictionary();
     }
 }

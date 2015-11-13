@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.CodeFormatting.Tests
                 // disable console output entirely by providing a null writer
                 settings.HelpWriter = null;
             });
-                            
+
             // We are only interested in formatting options, but we must provide
             // at least two verbs to ParseArguments in order to realize appropriate
             // behavior around parsing the verb name...
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.CodeFormatting.Tests
             Assert.Equal(12, options.RuleMap.Count);
             Assert.Equal(new[] { "test.csproj" }, options.FormatTargets);
 
-            foreach(bool enabledSetting in options.RuleMap.Values)
+            foreach (bool enabledSetting in options.RuleMap.Values)
             {
                 Assert.False(enabledSetting);
             }

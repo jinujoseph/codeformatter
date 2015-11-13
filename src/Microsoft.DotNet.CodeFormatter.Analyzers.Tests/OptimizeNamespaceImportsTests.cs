@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.CodeFormatter.Analyzers.Tests
     {
         public OptimizeNamespaceImportsTests()
         {
-            OptionsHelper.GetPropertiesImplementation = (analyzerOptions) => 
+            OptionsHelper.GetPropertiesImplementation = (analyzerOptions) =>
             {
                 PropertyBag properties = CreatePolicyThatDisablesAllAnalysis();
                 properties.SetProperty(OptionsHelper.BuildDefaultEnabledProperty(OptimizeNamespaceImportsAnalyzer.AnalyzerName), true);
