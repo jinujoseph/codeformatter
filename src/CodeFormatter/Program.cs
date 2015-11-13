@@ -123,7 +123,7 @@ namespace CodeFormatter
             var engine = FormattingEngine.Create(OptionsHelper.DefaultCompositionAssemblies);
 
             var configBuilder = ImmutableArray.CreateBuilder<string[]>();
-            configBuilder.Add(options.PreprocessorConfigurations.ToArray());            
+            configBuilder.Add(options.PreprocessorConfigurations.ToArray());
             engine.PreprocessorConfigurations = configBuilder.ToImmutableArray();
 
             engine.FormattingOptionsFilePath = options.OptionsFilePath;
