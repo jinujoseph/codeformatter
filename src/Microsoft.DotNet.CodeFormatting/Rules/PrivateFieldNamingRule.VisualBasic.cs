@@ -4,9 +4,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.VisualBasic;
-using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 
 namespace Microsoft.DotNet.CodeFormatting.Rules
 {
@@ -34,14 +31,14 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             internal static SyntaxNode AddAnnotations(SyntaxNode node, out int count)
             {
                 var rewriter = new VisualBasicPrivateFieldAnnotationRewriter();
-                var newNode = rewriter.Visit(node);
+                object newNode = rewriter.Visit(node);
                 count = rewriter._count;
                 return newNode;
             }
 
             public override SyntaxNode VisitModuleBlock(ModuleBlockSyntax node)
             {
-                var savedInModule = _inModule;
+                bool savedInModule = _inModule;
                 try
                 {
                     _inModule = true;
@@ -62,12 +59,12 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 }
 
                 var declarators = new List<VariableDeclaratorSyntax>(node.Declarators.Count);
-                foreach (var d in node.Declarators)
+                foreach (object d in node.Declarators)
                 {
                     var list = new List<ModifiedIdentifierSyntax>(d.Names.Count);
-                    foreach (var v in d.Names)
+                    foreach (object v in d.Names)
                     {
-                        var local = v;
+                        object local = v;
                         if (!IsGoodPrivateFieldName(v.Identifier.ValueText, isInstance))
                         {
                             local = local.WithAdditionalAnnotations(s_markerAnnotationArray);
@@ -90,9 +87,9 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                     return false;
                 }
 
-                foreach (var d in fieldSyntax.Declarators)
+                foreach (object d in fieldSyntax.Declarators)
                 {
-                    foreach (var v in d.Names)
+                    foreach (object v in d.Names)
                     {
                         if (!IsGoodPrivateFieldName(v.Identifier.ValueText, isInstance))
                         {
@@ -109,7 +106,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 var isPrivate = true;
                 isInstance = !_inModule;
 
-                foreach (var modifier in node.Modifiers)
+                foreach (object modifier in node.Modifiers)
                 {
                     switch (modifier.Kind())
                     {

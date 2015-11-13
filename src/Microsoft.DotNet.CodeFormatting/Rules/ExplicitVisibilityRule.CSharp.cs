@@ -7,9 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.DotNet.CodeFormatting.Rules
 {
@@ -182,7 +179,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                     _semanticModel = _document.GetSemanticModelAsync(_cancellationToken).Result;
                 }
 
-                var symbol = _semanticModel.GetDeclaredSymbol(originalDeclarationSyntax, _cancellationToken);
+                object symbol = _semanticModel.GetDeclaredSymbol(originalDeclarationSyntax, _cancellationToken);
                 if (symbol == null)
                 {
                     return null;
@@ -204,7 +201,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             private static SyntaxKind? GetVisibilityModifier(SyntaxTokenList list)
             {
-                foreach (var token in list)
+                foreach (object token in list)
                 {
                     if (SyntaxFacts.IsAccessibilityModifier(token.Kind()))
                     {
@@ -217,7 +214,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             private static bool IsNestedDeclaration(SyntaxNode node)
             {
-                var current = node.Parent;
+                object current = node.Parent;
                 while (current != null)
                 {
                     if (SyntaxFacts.IsTypeDeclaration(current.Kind()))
@@ -253,8 +250,8 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             {
                 Func<T, SyntaxKind, T> withFirstModifier = (node, visibilityKind) =>
                     {
-                        var token = getToken(node);
-                        var modifierList = CreateFirstModifierList(token.LeadingTrivia, visibilityKind);
+                        SyntaxToken token = getToken(node);
+                        SyntaxTokenList modifierList = CreateFirstModifierList(token.LeadingTrivia, visibilityKind);
                         node = withToken(node, token.WithLeadingTrivia());
                         node = withModifiers(node, modifierList);
                         return node;
@@ -276,8 +273,8 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             {
                 Func<T, SyntaxKind, T> withFirstModifier = (node, visibilityKind) =>
                     {
-                        var typeSyntax = getTypeSyntax(node);
-                        var modifierList = CreateFirstModifierList(typeSyntax.GetLeadingTrivia(), visibilityKind);
+                        TypeSyntax typeSyntax = getTypeSyntax(node);
+                        SyntaxTokenList modifierList = CreateFirstModifierList(typeSyntax.GetLeadingTrivia(), visibilityKind);
                         node = withTypeSyntax(node, typeSyntax.WithLeadingTrivia());
                         node = withModifiers(node, modifierList);
                         return node;
@@ -311,8 +308,8 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                     return withFirstModifier(originalNode, visibilityKind);
                 }
 
-                var leadingTrivia = originalModifierList[0].LeadingTrivia;
-                var visibilityToken = SyntaxFactory.Token(
+                object leadingTrivia = originalModifierList[0].LeadingTrivia;
+                object visibilityToken = SyntaxFactory.Token(
                     leadingTrivia,
                     visibilityKind,
                     SyntaxFactory.TriviaList(SyntaxFactory.SyntaxTrivia(SyntaxKind.WhitespaceTrivia, " ")));
@@ -330,7 +327,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             private static SyntaxTokenList CreateFirstModifierList(SyntaxTriviaList leadingTrivia, SyntaxKind visibilityKind)
             {
-                var visibilityToken = SyntaxFactory.Token(
+                object visibilityToken = SyntaxFactory.Token(
                     leadingTrivia,
                     visibilityKind,
                     SyntaxFactory.TriviaList(SyntaxFactory.SyntaxTrivia(SyntaxKind.WhitespaceTrivia, " ")));

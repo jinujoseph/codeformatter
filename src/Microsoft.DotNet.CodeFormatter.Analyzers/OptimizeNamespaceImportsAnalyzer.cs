@@ -72,13 +72,13 @@ namespace Microsoft.DotNet.CodeFormatter.Analyzers
                         firstDiagnostic = firstDiagnostic ?? diagnostic;
                         locations.Add(diagnostic.Location);
                     }
-                }    
-                
+                }
+
                 if (locations.Count > 0)
                 {
                     semanticModelAnalysisContext.ReportDiagnostic(
                         Diagnostic.Create(s_rule, firstDiagnostic.Location, locations));
-                }       
+                }
             });
         }
     }

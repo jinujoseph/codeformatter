@@ -64,13 +64,13 @@ namespace Microsoft.DotNet.CodeFormatter.Analyzers
                 case RuleType.None:
                     break;
             }
-            if (typeSyntaxNode!= null && varSymbol != null)
+            if (typeSyntaxNode != null && varSymbol != null)
             {
                 context.RegisterCodeFix(
                     CodeAction.Create(
                         Resources.ExplicitVariableTypeFixer_Title,
                         c => ReplaceVarWithExplicitType(context.Document,
-                                                        typeSyntaxNode, 
+                                                        typeSyntaxNode,
                                                         varSymbol.Type,
                                                         cancellationToken)),
                     diagnostic);
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.CodeFormatter.Analyzers
                         return RuleType.RuleVariableDeclaration;
                     case ProvideExplicitVariableTypeAnalyzer.ForEachStatementCustomTag:
                         return RuleType.RuleForEachStatement;
-                    // Diagnostics corresponding to this fixer must have either one of these above two custom tags
+                        // Diagnostics corresponding to this fixer must have either one of these above two custom tags
                 }
             }
             Debug.Fail("This program location is thought to be unreachable.");

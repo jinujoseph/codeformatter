@@ -6,12 +6,12 @@ using System.Collections.Immutable;
 using System.Composition;
 
 using Microsoft.CodeAnalysis.Options;
- 
+
 namespace Microsoft.DotNet.CodeFormatter.Analyzers
 {
     [Export(typeof(IOptionsProvider)), Shared]
     internal class OptimizeNamespaceImportsOptions : IOptionsProvider
-    {        
+    {
         public IEnumerable<IOption> GetOptions()
         {
             return new List<IOption>
