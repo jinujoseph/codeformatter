@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.Options
         public PropertyBag() : base() { }
 
         public PropertyBag(
-            PropertyBag initializer = null, 
+            PropertyBag initializer = null,
             IEqualityComparer<string> comparer = null)
             : base(initializer, comparer)
         {
@@ -110,7 +110,7 @@ namespace Microsoft.CodeAnalysis.Options
         }
 
         public void SaveTo(string filePath, string id)
-        {            
+        {
             using (var writer = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                 SaveTo(writer, id);
         }
@@ -138,7 +138,7 @@ namespace Microsoft.CodeAnalysis.Options
                 {
                     bool isEmpty = reader.IsEmptyElement;
                     this.Clear();
-                    
+
                     // Note: we do not recover the property bag id
                     //       as there is no current product use for the value
 

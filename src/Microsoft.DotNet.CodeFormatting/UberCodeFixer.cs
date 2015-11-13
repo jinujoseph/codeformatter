@@ -4,7 +4,6 @@
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 
-using Microsoft.CodeAnalysis.CodeFixes;
 
 namespace Microsoft.DotNet.CodeFormatting
 {
@@ -12,7 +11,7 @@ namespace Microsoft.DotNet.CodeFormatting
     {
         private class UberCodeFixer : CodeFixProvider
         {
-            private ImmutableDictionary<string, CodeFixProvider> _diagnosticIdToFixerMap;
+            private readonly ImmutableDictionary<string, CodeFixProvider> _diagnosticIdToFixerMap;
 
             public UberCodeFixer(ImmutableDictionary<string, CodeFixProvider> diagnosticIdToFixerMap)
             {
@@ -21,9 +20,9 @@ namespace Microsoft.DotNet.CodeFormatting
 
             public override async Task RegisterCodeFixesAsync(CodeFixContext context)
             {
-                foreach (var diagnostic in context.Diagnostics)
+                foreach (object diagnostic in context.Diagnostics)
                 {
-                    var fixer = _diagnosticIdToFixerMap[diagnostic.Id];
+                    CodeFixProvider fixer = _diagnosticIdToFixerMap[diagnostic.Id];
                     await fixer.RegisterCodeFixesAsync(new CodeFixContext(context.Document, diagnostic, (a, d) => context.RegisterCodeFix(a, d), context.CancellationToken)).ConfigureAwait(false);
                 }
             }

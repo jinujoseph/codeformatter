@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.CodeFormatter.Analyzers
                     return;
                 }
 
-                var node = (ForEachStatementSyntax)syntaxContext.Node; 
+                var node = (ForEachStatementSyntax)syntaxContext.Node;
                 if (node.Type != null &&
                     node.Identifier != null &&
                     node.Type.IsVar &&
@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.CodeFormatter.Analyzers
         /// </summary>
         private static bool IsAnonymousType(SyntaxNode node, SemanticModel model, CancellationToken cancellationToken)
         {
-            ISymbol symbol = model.GetDeclaredSymbol(node, cancellationToken); 
+            ISymbol symbol = model.GetDeclaredSymbol(node, cancellationToken);
             bool? isAnonymousType = ((ILocalSymbol)symbol)?.Type?.IsAnonymousType;
             return isAnonymousType.HasValue && isAnonymousType.Value;
         }
@@ -121,12 +121,12 @@ namespace Microsoft.DotNet.CodeFormatter.Analyzers
         //       The trade-off here is the logic we use to check syntax node is not as accurate as a query to SemanticModel, 
         //       which is (presumbly) much slower. 
         private static bool IsTypeObvious(SyntaxNode node)
-        {   
+        {
             if (node == null)
             {
                 return true;
             }
-                                                   
+
             ExpressionSyntax expressionNode = node is VariableDeclarationSyntax ?
                                 ((VariableDeclarationSyntax)node)?.Variables.FirstOrDefault()?.Initializer?.Value :
                                 (node as ForEachStatementSyntax)?.Expression;

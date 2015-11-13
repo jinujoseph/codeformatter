@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 
-using Microsoft.CodeAnalysis;
 
 namespace Microsoft.DotNet.CodeFormatting.Filters
 {
@@ -19,14 +18,14 @@ namespace Microsoft.DotNet.CodeFormatting.Filters
 
         public bool ShouldBeProcessed(Document document)
         {
-            var fileNames = _options.FileNames;
+            System.Collections.Immutable.ImmutableArray<string> fileNames = _options.FileNames;
             if (fileNames.IsDefaultOrEmpty)
             {
                 return true;
             }
 
             string docFilename = Path.GetFileName(document.FilePath);
-            foreach (var filename in fileNames)
+            foreach (string filename in fileNames)
             {
                 if (filename.Equals(docFilename, StringComparison.OrdinalIgnoreCase))
                 {

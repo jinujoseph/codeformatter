@@ -6,8 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Rename;
 
 namespace Microsoft.DotNet.CodeFormatting.Rules
 {
@@ -34,15 +32,15 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             public async Task<Solution> ProcessAsync(Document document, SyntaxNode syntaxRoot, CancellationToken cancellationToken)
             {
                 int count;
-                var newSyntaxRoot = AddPrivateFieldAnnotations(syntaxRoot, out count);
+                SyntaxNode newSyntaxRoot = AddPrivateFieldAnnotations(syntaxRoot, out count);
 
                 if (count == 0)
                 {
                     return document.Project.Solution;
                 }
 
-                var documentId = document.Id;
-                var solution = document.Project.Solution;
+                object documentId = document.Id;
+                object solution = document.Project.Solution;
                 solution = solution.WithDocumentSyntaxRoot(documentId, newSyntaxRoot);
                 solution = await RenameFields(solution, documentId, count, cancellationToken);
                 return solution;
@@ -54,12 +52,11 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 for (int i = 0; i < count; i++)
                 {
                     oldSolution = solution;
-
-                    var semanticModel = await solution.GetDocument(documentId).GetSemanticModelAsync(cancellationToken);
-                    var root = await semanticModel.SyntaxTree.GetRootAsync(cancellationToken);
-                    var declaration = root.GetAnnotatedNodes(s_markerAnnotation).ElementAt(i);
+                    object semanticModel = await solution.GetDocument(documentId).GetSemanticModelAsync(cancellationToken);
+                    object root = await semanticModel.SyntaxTree.GetRootAsync(cancellationToken);
+                    object declaration = root.GetAnnotatedNodes(s_markerAnnotation).ElementAt(i);
                     var fieldSymbol = (IFieldSymbol)semanticModel.GetDeclaredSymbol(declaration, cancellationToken);
-                    var newName = GetNewFieldName(fieldSymbol);
+                    string newName = GetNewFieldName(fieldSymbol);
 
                     // Can happen with pathologically bad field names like _
                     if (newName == fieldSymbol.Name)
@@ -76,7 +73,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             private static string GetNewFieldName(IFieldSymbol fieldSymbol)
             {
-                var name = fieldSymbol.Name.Trim('_');
+                object name = fieldSymbol.Name.Trim('_');
                 if (name.Length > 2 && char.IsLetter(name[0]) && name[1] == '_')
                 {
                     name = name.Substring(2);
@@ -110,11 +107,11 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             private async Task<Solution> CleanSolutionAsync(Solution newSolution, Solution oldSolution, CancellationToken cancellationToken)
             {
-                var solution = newSolution;
+                Solution solution = newSolution;
 
-                foreach (var projectChange in newSolution.GetChanges(oldSolution).GetProjectChanges())
+                foreach (object projectChange in newSolution.GetChanges(oldSolution).GetProjectChanges())
                 {
-                    foreach (var documentId in projectChange.GetChangedDocuments())
+                    foreach (object documentId in projectChange.GetChangedDocuments())
                     {
                         solution = await CleanSolutionDocument(solution, documentId, cancellationToken);
                     }
@@ -125,14 +122,14 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             private async Task<Solution> CleanSolutionDocument(Solution solution, DocumentId documentId, CancellationToken cancellationToken)
             {
-                var document = solution.GetDocument(documentId);
-                var syntaxNode = await document.GetSyntaxRootAsync(cancellationToken);
+                object document = solution.GetDocument(documentId);
+                object syntaxNode = await document.GetSyntaxRootAsync(cancellationToken);
                 if (syntaxNode == null)
                 {
                     return solution;
                 }
 
-                var newNode = RemoveRenameAnnotations(syntaxNode);
+                SyntaxNode newNode = RemoveRenameAnnotations(syntaxNode);
                 return solution.WithDocumentSyntaxRoot(documentId, newNode);
             }
         }

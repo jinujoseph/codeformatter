@@ -3,9 +3,6 @@
 
 using System.Linq;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.DotNet.CodeFormatting.Rules
 {
@@ -23,18 +20,14 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             var root = syntaxNode as CompilationUnitSyntax;
             if (root == null)
                 return syntaxNode;
-
-            // This rule can only be done safely as a syntax transformation when there is a single namespace
-            // declaration in the file.  Once there is more than one it opens up the possibility of introducing
-            // ambiguities to essentially make using directives global which were previously local.
-            var namespaceDeclarationList = root.Members.OfType<NamespaceDeclarationSyntax>().ToList();
+            object namespaceDeclarationList = root.Members.OfType<NamespaceDeclarationSyntax>().ToList();
             if (namespaceDeclarationList.Count != 1)
             {
                 return syntaxNode;
             }
 
-            var namespaceDeclaration = namespaceDeclarationList.Single();
-            var usingList = namespaceDeclaration.Usings;
+            object namespaceDeclaration = namespaceDeclarationList.Single();
+            object usingList = namespaceDeclaration.Usings;
             if (usingList.Count == 0)
             {
                 return syntaxNode;
@@ -61,7 +54,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 return syntaxNode;
             }
 
-            var newRoot = root;
+            CompilationUnitSyntax newRoot = root;
             newRoot = newRoot.ReplaceNode(namespaceDeclaration, namespaceDeclaration.WithUsings(SyntaxFactory.List<UsingDirectiveSyntax>()));
             newRoot = newRoot.WithUsings(newRoot.Usings.AddRange(namespaceDeclaration.Usings));
 

@@ -1,4 +1,7 @@
-﻿// /********************************************************
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+// /********************************************************
 // *                                                       *
 // *   Copyright (C) Microsoft. All rights reserved.       *
 // *                                                       *
@@ -31,9 +34,9 @@ namespace Microsoft.CodeAnalysis.Options
         {
             var propertyBag = new PropertyBag();
 
-            TestEnum testEnum = propertyBag.GetProperty(TestEnumOptionTwo, cacheDefault: false);
+            TestEnum testEnum = propertyBag.GetProperty(s_testEnumOptionTwo, cacheDefault: false);
 
-            Assert.AreEqual(TestEnumOptionTwo.DefaultValue, testEnum);
+            Assert.AreEqual(s_testEnumOptionTwo.DefaultValue, testEnum);
             Assert.AreEqual(propertyBag.Count, 0);
         }
 
@@ -42,9 +45,9 @@ namespace Microsoft.CodeAnalysis.Options
         {
             var propertyBag = new TestEnumPropertyBag();
 
-            TestEnum testEnum = propertyBag.GetProperty(TestEnumOptionTwo, cacheDefault: false);
+            TestEnum testEnum = propertyBag.GetProperty(s_testEnumOptionTwo, cacheDefault: false);
 
-            Assert.AreEqual(TestEnumOptionTwo.DefaultValue, testEnum);
+            Assert.AreEqual(s_testEnumOptionTwo.DefaultValue, testEnum);
             Assert.AreEqual(propertyBag.Count, 0);
         }
 
@@ -54,7 +57,7 @@ namespace Microsoft.CodeAnalysis.Options
             int expectedValue = 72;
             var propertyBag = new PropertyBag();
             propertyBag["TestValue"] = expectedValue.ToString();
-            
+
             var copiedPropertyBag = new PropertyBag(propertyBag, StringComparer.OrdinalIgnoreCase);
 
             int converted;
@@ -116,7 +119,7 @@ namespace Microsoft.CodeAnalysis.Options
         }
 
         [TestMethod]
-        public void PropertyBag_ArgumentNullChecks()        
+        public void PropertyBag_ArgumentNullChecks()
         {
             bool argumentNull = false;
 
@@ -161,16 +164,16 @@ namespace Microsoft.CodeAnalysis.Options
                 if (File.Exists(path)) { File.Delete(path); }
             }
 
-            TestEnumPropertyBag typedPropertyBag = propertyBag.GetProperty(TypedPropertyBagOption);
+            TestEnumPropertyBag typedPropertyBag = propertyBag.GetProperty(s_typedPropertyBagOption);
 
-            typedPropertyBag.SetProperty(TestEnumOptionThree, TestEnum.ValueOne);
-            Assert.AreEqual(TestEnum.ValueOne, typedPropertyBag.GetProperty(TestEnumOptionThree));
-            Assert.AreNotEqual(TestEnumOptionThree.DefaultValue, typedPropertyBag.GetProperty(TestEnumOptionThree));
+            typedPropertyBag.SetProperty(s_testEnumOptionThree, TestEnum.ValueOne);
+            Assert.AreEqual(TestEnum.ValueOne, typedPropertyBag.GetProperty(s_testEnumOptionThree));
+            Assert.AreNotEqual(s_testEnumOptionThree.DefaultValue, typedPropertyBag.GetProperty(s_testEnumOptionThree));
 
-            Assert.AreEqual(TestEnumOptionTwo.DefaultValue, typedPropertyBag.GetProperty(TestEnumOptionTwo));
+            Assert.AreEqual(s_testEnumOptionTwo.DefaultValue, typedPropertyBag.GetProperty(s_testEnumOptionTwo));
 
-            propertyBag.SetProperty(TypedPropertyBagOption, null);
-            typedPropertyBag = propertyBag.GetProperty(TypedPropertyBagOption);
+            propertyBag.SetProperty(s_typedPropertyBagOption, null);
+            typedPropertyBag = propertyBag.GetProperty(s_typedPropertyBagOption);
 
             // The Roslyn options pattern has a design flaw in that it does not provide for handing out new 
             // default instances of references type. Instead, the option instance retains a singleton
@@ -208,11 +211,11 @@ namespace Microsoft.CodeAnalysis.Options
         public void PropertyBag_RemoveFromTypedPropertyBag()
         {
             var typedPropertyBag = new TypedPropertyBag<PropertyBag>();
-            var propertyBag = typedPropertyBag.GetProperty(PropertyBagOption);
+            var propertyBag = typedPropertyBag.GetProperty(s_propertyBagOption);
 
             Assert.AreEqual(1, typedPropertyBag.Count);
 
-            typedPropertyBag.SetProperty(PropertyBagOption, null);
+            typedPropertyBag.SetProperty(s_propertyBagOption, null);
             Assert.AreEqual(0, typedPropertyBag.Count);
         }
 
@@ -292,9 +295,9 @@ namespace Microsoft.CodeAnalysis.Options
             Assert.IsNull(testDataResult);
         }
 
-        struct MyStruct { }
+        private struct MyStruct { }
 
-        class TestData
+        private class TestData
         {
             public bool BooleanValue;
             public double DoubleValue;
@@ -360,76 +363,76 @@ namespace Microsoft.CodeAnalysis.Options
 
             internal void InitializePropertyBag(PropertyBag propertyBag)
             {
-                propertyBag.SetProperty(DoubleOption, DoubleValue);
-                propertyBag.SetProperty(BooleanOption, BooleanValue);
-                propertyBag.SetProperty(TestEnumOptionThree, TestEnumValue);
-                propertyBag.SetProperty(StringSetOption, StringSetValue);
+                propertyBag.SetProperty(s_doubleOption, DoubleValue);
+                propertyBag.SetProperty(s_booleanOption, BooleanValue);
+                propertyBag.SetProperty(s_testEnumOptionThree, TestEnumValue);
+                propertyBag.SetProperty(s_stringSetOption, StringSetValue);
 
                 PropertyBagValue = new PropertyBag();
-                PropertyBagValue.SetProperty(DoubleOption, EmbeddedDoubleValue);
-                PropertyBagValue.SetProperty(BooleanOption, EmbeddedBooleanValue);
-                PropertyBagValue.SetProperty(TestEnumOptionThree, EmbeddedTestEnumValue);
-                PropertyBagValue.SetProperty(StringSetOption, EmbeddedStringSetValue);
+                PropertyBagValue.SetProperty(s_doubleOption, EmbeddedDoubleValue);
+                PropertyBagValue.SetProperty(s_booleanOption, EmbeddedBooleanValue);
+                PropertyBagValue.SetProperty(s_testEnumOptionThree, EmbeddedTestEnumValue);
+                PropertyBagValue.SetProperty(s_stringSetOption, EmbeddedStringSetValue);
 
 
-                propertyBag.SetProperty(PropertyBagOption, PropertyBagValue);
+                propertyBag.SetProperty(s_propertyBagOption, PropertyBagValue);
 
-                TypedPropertyBagValue = propertyBag.GetProperty(TypedPropertyBagOption);
-                TypedPropertyBagValue.SetProperty(TestEnumOptionThree, EmbeddedTestEnumValue);
+                TypedPropertyBagValue = propertyBag.GetProperty(s_typedPropertyBagOption);
+                TypedPropertyBagValue.SetProperty(s_testEnumOptionThree, EmbeddedTestEnumValue);
 
-                propertyBag.SetProperty(TypedPropertyBagOption, TypedPropertyBagValue);
+                propertyBag.SetProperty(s_typedPropertyBagOption, TypedPropertyBagValue);
             }
 
             internal void ValidatePropertyBag(PropertyBag propertyBag)
             {
-                Assert.AreEqual(DoubleValue, propertyBag.GetProperty(DoubleOption));
-                Assert.AreEqual(BooleanValue, propertyBag.GetProperty(BooleanOption));
-                Assert.AreEqual(TestEnumValue, propertyBag.GetProperty(TestEnumOptionThree));
+                Assert.AreEqual(DoubleValue, propertyBag.GetProperty(s_doubleOption));
+                Assert.AreEqual(BooleanValue, propertyBag.GetProperty(s_booleanOption));
+                Assert.AreEqual(TestEnumValue, propertyBag.GetProperty(s_testEnumOptionThree));
 
-                ValidateStringSet(StringSetValue, propertyBag.GetProperty(StringSetOption));
+                ValidateStringSet(StringSetValue, propertyBag.GetProperty(s_stringSetOption));
 
-                Assert.AreEqual(EmbeddedDoubleValue, propertyBag.GetProperty(PropertyBagOption).GetProperty(DoubleOption));
-                Assert.AreEqual(EmbeddedBooleanValue, propertyBag.GetProperty(PropertyBagOption).GetProperty(BooleanOption));
-                Assert.AreEqual(EmbeddedTestEnumValue, propertyBag.GetProperty(PropertyBagOption).GetProperty(TestEnumOptionThree));
+                Assert.AreEqual(EmbeddedDoubleValue, propertyBag.GetProperty(s_propertyBagOption).GetProperty(s_doubleOption));
+                Assert.AreEqual(EmbeddedBooleanValue, propertyBag.GetProperty(s_propertyBagOption).GetProperty(s_booleanOption));
+                Assert.AreEqual(EmbeddedTestEnumValue, propertyBag.GetProperty(s_propertyBagOption).GetProperty(s_testEnumOptionThree));
 
-                ValidateStringSet(EmbeddedStringSetValue, propertyBag.GetProperty(PropertyBagOption).GetProperty(StringSetOption));
+                ValidateStringSet(EmbeddedStringSetValue, propertyBag.GetProperty(s_propertyBagOption).GetProperty(s_stringSetOption));
 
-                ValidatePropertyBag(PropertyBagValue, propertyBag.GetProperty(PropertyBagOption));
-                ValidatePropertyBag(TypedPropertyBagValue, propertyBag.GetProperty(TypedPropertyBagOption));
+                ValidatePropertyBag(PropertyBagValue, propertyBag.GetProperty(s_propertyBagOption));
+                ValidatePropertyBag(TypedPropertyBagValue, propertyBag.GetProperty(s_typedPropertyBagOption));
             }
         }
 
         private const string TEST_FEATURE = "TestFeature";
 
-        private static PerLanguageOption<bool> BooleanOption = 
-            new PerLanguageOption<bool>(TEST_FEATURE, nameof(BooleanOption), false);
+        private static PerLanguageOption<bool> s_booleanOption =
+            new PerLanguageOption<bool>(TEST_FEATURE, nameof(s_booleanOption), false);
 
-        private static PerLanguageOption<double> DoubleOption = 
-            new PerLanguageOption<double>(TEST_FEATURE, nameof(DoubleOption), 4.7d);
+        private static PerLanguageOption<double> s_doubleOption =
+            new PerLanguageOption<double>(TEST_FEATURE, nameof(s_doubleOption), 4.7d);
 
-        private static PerLanguageOption<PropertyBag> PropertyBagOption = 
-            new PerLanguageOption<PropertyBag>(TEST_FEATURE, nameof(PropertyBagOption), new PropertyBag());
+        private static PerLanguageOption<PropertyBag> s_propertyBagOption =
+            new PerLanguageOption<PropertyBag>(TEST_FEATURE, nameof(s_propertyBagOption), new PropertyBag());
 
-        private static PerLanguageOption<TestEnum> TestEnumOptionTwo =
-            new PerLanguageOption<TestEnum>(TEST_FEATURE, nameof(TestEnumOptionTwo), TestEnum.ValueTwo);
+        private static PerLanguageOption<TestEnum> s_testEnumOptionTwo =
+            new PerLanguageOption<TestEnum>(TEST_FEATURE, nameof(s_testEnumOptionTwo), TestEnum.ValueTwo);
 
-        private static PerLanguageOption<TestEnum> TestEnumOptionThree =
-            new PerLanguageOption<TestEnum>(TEST_FEATURE, nameof(TestEnumOptionThree), TestEnum.ValueThree);
+        private static PerLanguageOption<TestEnum> s_testEnumOptionThree =
+            new PerLanguageOption<TestEnum>(TEST_FEATURE, nameof(s_testEnumOptionThree), TestEnum.ValueThree);
 
-        private static PerLanguageOption<StringSet> StringSetOption =
-            new PerLanguageOption<StringSet>(TEST_FEATURE, nameof(StringSetOption), new StringSet(new string[] { "one", "two" }));
+        private static PerLanguageOption<StringSet> s_stringSetOption =
+            new PerLanguageOption<StringSet>(TEST_FEATURE, nameof(s_stringSetOption), new StringSet(new string[] { "one", "two" }));
 
-        private static PerLanguageOption<string> StringOption =
-            new PerLanguageOption<string>(TEST_FEATURE, nameof(StringOption), null);
-
-        [Serializable]
-        enum TestEnum { ValueOne = 1, ValueTwo, ValueThree }
-
-        private static PerLanguageOption<TestEnumPropertyBag> TypedPropertyBagOption =
-            new PerLanguageOption<TestEnumPropertyBag>(TEST_FEATURE, nameof(TypedPropertyBagOption), new TestEnumPropertyBag());
+        private static PerLanguageOption<string> s_stringOption =
+            new PerLanguageOption<string>(TEST_FEATURE, nameof(s_stringOption), null);
 
         [Serializable]
-        class TestEnumPropertyBag : TypedPropertyBag<TestEnum>
+        private enum TestEnum { ValueOne = 1, ValueTwo, ValueThree }
+
+        private static PerLanguageOption<TestEnumPropertyBag> s_typedPropertyBagOption =
+            new PerLanguageOption<TestEnumPropertyBag>(TEST_FEATURE, nameof(s_typedPropertyBagOption), new TestEnumPropertyBag());
+
+        [Serializable]
+        private class TestEnumPropertyBag : TypedPropertyBag<TestEnum>
         {
             public TestEnumPropertyBag() { }
 

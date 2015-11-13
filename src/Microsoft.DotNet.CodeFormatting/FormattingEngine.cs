@@ -2,10 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Immutable;
-using System.Composition.Convention;
-using System.Composition.Hosting;
 
-using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.CodeAnalysis.Options;
@@ -16,29 +13,29 @@ namespace Microsoft.DotNet.CodeFormatting
     {
         public static IFormattingEngine Create(IEnumerable<Assembly> assemblies = null)
         {
-            var container = CreateCompositionContainer(assemblies);
-            var engine = container.GetExport<IFormattingEngine>();
+            CompositionHost container = CreateCompositionContainer(assemblies);
+            object engine = container.GetExport<IFormattingEngine>();
             var consoleFormatLogger = new ConsoleFormatLogger();
             return engine;
         }
 
         public static ImmutableArray<IRuleMetadata> GetFormattingRules(IEnumerable<Assembly> assemblies = null)
         {
-            var container = CreateCompositionContainer(assemblies);
-            var engine = container.GetExport<IFormattingEngine>();
+            CompositionHost container = CreateCompositionContainer(assemblies);
+            object engine = container.GetExport<IFormattingEngine>();
             return engine.AllRules;
         }
 
         public static ImmutableArray<DiagnosticDescriptor> GetSupportedDiagnostics(IEnumerable<Assembly> assemblies)
         {
-            var container = CreateCompositionContainer(assemblies);
-            var engine = container.GetExport<IFormattingEngine>();
+            CompositionHost container = CreateCompositionContainer(assemblies);
+            object engine = container.GetExport<IFormattingEngine>();
             return engine.AllSupportedDiagnostics;
         }
 
         public static ImmutableArray<IOptionsProvider> GetOptionsProviders(IEnumerable<Assembly> assemblies)
         {
-            var container = CreateCompositionContainer(assemblies);
+            CompositionHost container = CreateCompositionContainer(assemblies);
             return container.GetExports<IOptionsProvider>().ToImmutableArray();
         }
 
