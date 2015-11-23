@@ -1,17 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Rename;
 using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 
@@ -41,14 +34,14 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             internal static SyntaxNode AddAnnotations(SyntaxNode node, out int count)
             {
                 var rewriter = new VisualBasicPrivateFieldAnnotationRewriter();
-                var newNode = rewriter.Visit(node);
+                SyntaxNode newNode = rewriter.Visit(node);
                 count = rewriter._count;
                 return newNode;
             }
 
             public override SyntaxNode VisitModuleBlock(ModuleBlockSyntax node)
             {
-                var savedInModule = _inModule;
+                bool savedInModule = _inModule;
                 try
                 {
                     _inModule = true;
@@ -69,12 +62,12 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 }
 
                 var declarators = new List<VariableDeclaratorSyntax>(node.Declarators.Count);
-                foreach (var d in node.Declarators)
+                foreach (VariableDeclaratorSyntax d in node.Declarators)
                 {
                     var list = new List<ModifiedIdentifierSyntax>(d.Names.Count);
-                    foreach (var v in d.Names)
+                    foreach (ModifiedIdentifierSyntax v in d.Names)
                     {
-                        var local = v;
+                        ModifiedIdentifierSyntax local = v;
                         if (!IsGoodPrivateFieldName(v.Identifier.ValueText, isInstance))
                         {
                             local = local.WithAdditionalAnnotations(s_markerAnnotationArray);
@@ -97,9 +90,9 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                     return false;
                 }
 
-                foreach (var d in fieldSyntax.Declarators)
+                foreach (VariableDeclaratorSyntax d in fieldSyntax.Declarators)
                 {
-                    foreach (var v in d.Names)
+                    foreach (ModifiedIdentifierSyntax v in d.Names)
                     {
                         if (!IsGoodPrivateFieldName(v.Identifier.ValueText, isInstance))
                         {
@@ -116,7 +109,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 var isPrivate = true;
                 isInstance = !_inModule;
 
-                foreach (var modifier in node.Modifiers)
+                foreach (SyntaxToken modifier in node.Modifiers)
                 {
                     switch (modifier.Kind())
                     {

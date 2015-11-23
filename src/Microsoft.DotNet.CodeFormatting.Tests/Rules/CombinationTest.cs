@@ -334,7 +334,6 @@ internal class C
         [Fact]
         public void CSharpHeaderCorrectAfterMovingUsings()
         {
-
             var source = @"
 namespace Microsoft.Build.UnitTests
 {
