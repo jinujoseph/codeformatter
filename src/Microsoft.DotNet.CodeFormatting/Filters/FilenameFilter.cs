@@ -2,12 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.DotNet.CodeFormatting.Filters
@@ -25,14 +21,14 @@ namespace Microsoft.DotNet.CodeFormatting.Filters
 
         public bool ShouldBeProcessed(Document document)
         {
-            var fileNames = _options.FileNames;
+            System.Collections.Immutable.ImmutableArray<string> fileNames = _options.FileNames;
             if (fileNames.IsDefaultOrEmpty)
             {
                 return true;
             }
 
             string docFilename = Path.GetFileName(document.FilePath);
-            foreach (var filename in fileNames)
+            foreach (string filename in fileNames)
             {
                 if (filename.Equals(docFilename, StringComparison.OrdinalIgnoreCase))
                 {
