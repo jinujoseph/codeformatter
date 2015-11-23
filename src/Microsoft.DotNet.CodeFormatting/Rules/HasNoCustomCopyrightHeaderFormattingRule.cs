@@ -7,8 +7,6 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -38,15 +36,13 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             // SetHeaders
             if (!SetHeaders())
                 return syntaxNode;
-
-            var triviaList = syntaxNode.GetLeadingTrivia();
+            SyntaxTriviaList triviaList = syntaxNode.GetLeadingTrivia();
 
             SyntaxTrivia start;
             SyntaxTrivia end;
             if (!TryGetStartAndEndOfXmlHeader(triviaList, out start, out end))
                 return syntaxNode;
-
-            var filteredList = Filter(triviaList, start, end);
+            IEnumerable<SyntaxTrivia> filteredList = Filter(triviaList, start, end);
             return syntaxNode.WithLeadingTrivia(filteredList);
         }
 
@@ -54,7 +50,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
         {
             var inHeader = false;
 
-            foreach (var trivia in triviaList)
+            foreach (SyntaxTrivia trivia in triviaList)
             {
                 if (trivia == start)
                     inHeader = true;
@@ -73,7 +69,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             var hasStart = false;
             var hasEnd = false;
 
-            foreach (var trivia in triviaList)
+            foreach (SyntaxTrivia trivia in triviaList)
             {
                 if (!hasStart && IsBeginningOfXmlHeader(trivia, out start))
                     hasStart = true;
@@ -87,10 +83,9 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
         private static bool IsBeginningOfXmlHeader(SyntaxTrivia trivia, out SyntaxTrivia start)
         {
-            var next = GetNextComment(trivia);
-
-            var currentFullText = trivia.ToFullString();
-            var nextFullText = next == null ? string.Empty : next.Value.ToFullString();
+            SyntaxTrivia? next = GetNextComment(trivia);
+            string currentFullText = trivia.ToFullString();
+            string nextFullText = next == null ? string.Empty : next.Value.ToFullString();
 
             start = trivia;
             return currentFullText.StartsWith(StartMarker, StringComparison.OrdinalIgnoreCase) ||
@@ -100,10 +95,9 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
         private static bool IsEndOfXmlHeader(SyntaxTrivia trivia, out SyntaxTrivia end)
         {
-            var next = GetNextComment(trivia);
-
-            var currentFullText = trivia.ToFullString();
-            var nextFullText = next == null ? string.Empty : next.Value.ToFullString();
+            SyntaxTrivia? next = GetNextComment(trivia);
+            string currentFullText = trivia.ToFullString();
+            string nextFullText = next == null ? string.Empty : next.Value.ToFullString();
 
             end = nextFullText.StartsWith(RulerMarker, StringComparison.OrdinalIgnoreCase)
                     ? next.Value
@@ -113,7 +107,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
         private static SyntaxTrivia? GetNextComment(SyntaxTrivia currentTrivia)
         {
-            var trivia = currentTrivia.Token.LeadingTrivia;
+            SyntaxTriviaList trivia = currentTrivia.Token.LeadingTrivia;
             return trivia.SkipWhile(t => t != currentTrivia)
                          .Skip(1)
                          .SkipWhile(t => t.Kind() != SyntaxKind.SingleLineCommentTrivia)
@@ -123,7 +117,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
         private bool SetHeaders()
         {
-            var filePath = Path.Combine(
+            string filePath = Path.Combine(
                 Path.GetDirectoryName(Uri.UnescapeDataString(new UriBuilder(Assembly.GetExecutingAssembly().CodeBase).Path)),
                 "CopyrightHeader.md");
 
@@ -133,7 +127,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 return false;
             }
 
-            var lines = File.ReadAllLines(filePath).Where(l => !l.StartsWith("##") && !l.Equals("")).ToArray();
+            string[] lines = File.ReadAllLines(filePath).Where(l => !l.StartsWith("##") && !l.Equals("")).ToArray();
             if (lines.Count() != 3)
             {
                 _options.FormatLogger.WriteErrorLine("There should be exactly 3 lines in CopyrightHeader.md.");
