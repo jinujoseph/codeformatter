@@ -1,14 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Linq;
 using System.ComponentModel.Composition.Hosting;
-using System.ComponentModel.Composition;
 using System.Collections.Generic;
-using Microsoft.DotNet.CodeFormatting.Rules;
-using Microsoft.DotNet.CodeFormatting.Filters;
-using System.Collections.Immutable;
 
 namespace Microsoft.DotNet.CodeFormatting
 {
@@ -16,15 +10,15 @@ namespace Microsoft.DotNet.CodeFormatting
     {
         public static IFormattingEngine Create()
         {
-            var container = CreateCompositionContainer();
-            var engine = container.GetExportedValue<IFormattingEngine>();
+            CompositionContainer container = CreateCompositionContainer();
+            IFormattingEngine engine = container.GetExportedValue<IFormattingEngine>();
             var consoleFormatLogger = new ConsoleFormatLogger();
             return engine;
         }
 
         public static List<IRuleMetadata> GetFormattingRules()
         {
-            var container = CreateCompositionContainer();
+            CompositionContainer container = CreateCompositionContainer();
             var list = new List<IRuleMetadata>();
             AppendRules<ISyntaxFormattingRule>(list, container);
             AppendRules<ILocalSemanticFormattingRule>(list, container);
@@ -35,7 +29,7 @@ namespace Microsoft.DotNet.CodeFormatting
         private static void AppendRules<T>(List<IRuleMetadata> list, CompositionContainer container)
             where T : IFormattingRule
         {
-            foreach (var rule in container.GetExports<T, IRuleMetadata>())
+            foreach (Lazy<T, IRuleMetadata> rule in container.GetExports<T, IRuleMetadata>())
             {
                 list.Add(rule.Metadata);
             }
