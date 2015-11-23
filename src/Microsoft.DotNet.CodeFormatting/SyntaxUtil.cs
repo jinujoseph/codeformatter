@@ -3,11 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.CodeFormatting
 {
@@ -55,7 +51,7 @@ namespace Microsoft.DotNet.CodeFormatting
 
         private static bool TryGetExistingNewLine(SyntaxTriviaList list, out SyntaxTrivia newLineTrivia)
         {
-            foreach (var trivia in list)
+            foreach (SyntaxTrivia trivia in list)
             {
                 if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
                 {
@@ -98,7 +94,7 @@ namespace Microsoft.DotNet.CodeFormatting
         /// </summary>
         internal static SyntaxNode FindPreviousNodeInParent(this SyntaxNode node)
         {
-            var parent = node.Parent;
+            SyntaxNode parent = node.Parent;
             if (parent == null)
             {
                 return null;
