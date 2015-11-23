@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -29,26 +28,24 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
         public Task<SyntaxNode> ProcessAsync(Document document, SyntaxNode syntaxNode, CancellationToken cancellationToken)
         {
-            var leadingTrivia = syntaxNode.GetLeadingTrivia();
+            SyntaxTriviaList leadingTrivia = syntaxNode.GetLeadingTrivia();
             SyntaxTriviaList newTrivia = leadingTrivia;
-            var illegalHeaders = GetIllegalHeaders(document);
+            string[] illegalHeaders = GetIllegalHeaders(document);
 
             // We also want to add the filename (without path but with extension) to this list.
 
             // because we are mutating the list, once we remove a header, we won't remove any others...
             for (int idx = 0; idx < illegalHeaders.Length; idx++)
             {
-                var illegalHeader = illegalHeaders[idx];
-                foreach (var trivia in newTrivia)
+                string illegalHeader = illegalHeaders[idx];
+                foreach (SyntaxTrivia trivia in newTrivia)
                 {
                     // If we have an illegal header here...
                     if (trivia.ToFullString().IndexOf(illegalHeader, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         if (trivia.IsKind(SyntaxKind.MultiLineCommentTrivia))
                         {
-                            // For multiline comment trivia we need to process them line by line and remove all the illegal headers.
-                            // We then need to re-create the multiline comment and append it to the list.
-                            var modifiedTrivia = RemoveIllegalHeadersFromMultilineComment(newTrivia, trivia, illegalHeader);
+                            SyntaxTriviaList modifiedTrivia = RemoveIllegalHeadersFromMultilineComment(newTrivia, trivia, illegalHeader);
 
                             // We need to go back and re-try the current illegal header if we have modified the multiline trivia.
                             if (modifiedTrivia != newTrivia)
@@ -60,7 +57,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                         }
                         else
                         {
-                            var index = newTrivia.IndexOf(trivia);
+                            int index = newTrivia.IndexOf(trivia);
 
                             newTrivia = RemoveTriviaAtIndex(newTrivia, index);
 
@@ -81,7 +78,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
         private string[] GetIllegalHeaders(Document document)
         {
-            var filePath = Path.Combine(
+            string filePath = Path.Combine(
                 Path.GetDirectoryName(Uri.UnescapeDataString(new UriBuilder(Assembly.GetExecutingAssembly().CodeBase).Path)),
                 "IllegalHeaders.md");
 
@@ -137,14 +134,12 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 return newTrivia;
             }
 
-            // Remove the old trivia and replace it with the new trivia
-            var index = newTrivia.IndexOf(trivia);
+            int index = newTrivia.IndexOf(trivia);
             newTrivia = RemoveTriviaAtIndex(newTrivia, index);
 
             if (commentHasMeaningfulInfo)
             {
-                // we need to remove the original multiline comment and replace it with this new one.
-                var newMultilineComment = SyntaxFactory.Comment(newTriviaString.ToString());
+                SyntaxTrivia newMultilineComment = SyntaxFactory.Comment(newTriviaString.ToString());
                 newTrivia = newTrivia.Insert(index, newMultilineComment);
             }
 
