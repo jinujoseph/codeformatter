@@ -18,10 +18,10 @@ namespace Microsoft.DotNet.DeadRegionAnalysis
 {
     public partial class AnalysisEngine
     {
-        private Options _options;
-        private CompositePreprocessorExpressionEvaluator _expressionEvaluator;
-        private PreprocessorExpressionSimplifier _expressionSimplifier;
-        private PreprocessorSymbolTracker _symbolTracker;
+        private readonly Options _options;
+        private readonly CompositePreprocessorExpressionEvaluator _expressionEvaluator;
+        private readonly PreprocessorExpressionSimplifier _expressionSimplifier;
+        private readonly PreprocessorSymbolTracker _symbolTracker;
 
         public event Func<AnalysisEngine, DocumentConditionalRegionInfo, CancellationToken, Task> DocumentAnalyzed;
 

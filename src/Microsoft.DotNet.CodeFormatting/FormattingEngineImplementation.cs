@@ -6,14 +6,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.DotNet.CodeFormatting
@@ -99,7 +96,7 @@ namespace Microsoft.DotNet.CodeFormatting
             _localSemanticRules = localSemanticRules;
             _globalSemanticRules = globalSemanticRules;
 
-            foreach (var rule in AllRules)
+            foreach (IRuleMetadata rule in AllRules)
             {
                 _ruleMap[rule.Name] = rule.DefaultRule;
             }
@@ -117,7 +114,7 @@ namespace Microsoft.DotNet.CodeFormatting
 
         public Task FormatSolutionAsync(Solution solution, CancellationToken cancellationToken)
         {
-            var documentIds = solution.Projects.SelectMany(x => x.DocumentIds).ToList();
+            List<DocumentId> documentIds = solution.Projects.SelectMany(x => x.DocumentIds).ToList();
             return FormatAsync(solution.Workspace, documentIds, cancellationToken);
         }
 
@@ -135,9 +132,8 @@ namespace Microsoft.DotNet.CodeFormatting
         {
             var watch = new Stopwatch();
             watch.Start();
-
-            var originalSolution = workspace.CurrentSolution;
-            var solution = await FormatCoreAsync(originalSolution, documentIds, cancellationToken);
+            Solution originalSolution = workspace.CurrentSolution;
+            Solution solution = await FormatCoreAsync(originalSolution, documentIds, cancellationToken);
 
             watch.Stop();
 
@@ -151,10 +147,10 @@ namespace Microsoft.DotNet.CodeFormatting
 
         private Solution AddTablePreprocessorSymbol(Solution solution)
         {
-            var projectIds = solution.ProjectIds;
-            foreach (var projectId in projectIds)
+            IReadOnlyList<ProjectId> projectIds = solution.ProjectIds;
+            foreach (ProjectId projectId in projectIds)
             {
-                var project = solution.GetProject(projectId);
+                Project project = solution.GetProject(projectId);
                 var parseOptions = project.ParseOptions as CSharpParseOptions;
                 if (parseOptions != null)
                 {
@@ -175,11 +171,11 @@ namespace Microsoft.DotNet.CodeFormatting
         /// </summary>
         private Solution RemoveTablePreprocessorSymbol(Solution newSolution, Solution oldSolution)
         {
-            var projectIds = newSolution.ProjectIds;
-            foreach (var projectId in projectIds)
+            IReadOnlyList<ProjectId> projectIds = newSolution.ProjectIds;
+            foreach (ProjectId projectId in projectIds)
             {
-                var oldProject = oldSolution.GetProject(projectId);
-                var newProject = newSolution.GetProject(projectId);
+                Project oldProject = oldSolution.GetProject(projectId);
+                Project newProject = newSolution.GetProject(projectId);
                 newSolution = newProject.WithParseOptions(oldProject.ParseOptions).Solution;
             }
 
@@ -188,7 +184,7 @@ namespace Microsoft.DotNet.CodeFormatting
 
         internal async Task<Solution> FormatCoreAsync(Solution originalSolution, IReadOnlyList<DocumentId> documentIds, CancellationToken cancellationToken)
         {
-            var solution = originalSolution;
+            Solution solution = originalSolution;
 
             if (_allowTables)
             {
@@ -209,9 +205,9 @@ namespace Microsoft.DotNet.CodeFormatting
 
         private bool ShouldBeProcessed(Document document)
         {
-            foreach (var filter in _filters)
+            foreach (IFormattingFilter filter in _filters)
             {
-                var shouldBeProcessed = filter.ShouldBeProcessed(document);
+                bool shouldBeProcessed = filter.ShouldBeProcessed(document);
                 if (!shouldBeProcessed)
                     return false;
             }
@@ -262,19 +258,18 @@ namespace Microsoft.DotNet.CodeFormatting
         private async Task<Solution> RunSyntaxPass(Solution originalSolution, IReadOnlyList<DocumentId> documentIds, CancellationToken cancellationToken)
         {
             FormatLogger.WriteLine("\tSyntax Pass");
-
-            var currentSolution = originalSolution;
-            foreach (var documentId in documentIds)
+            Solution currentSolution = originalSolution;
+            foreach (DocumentId documentId in documentIds)
             {
-                var document = originalSolution.GetDocument(documentId);
-                var syntaxRoot = await GetSyntaxRootAndFilter(document, cancellationToken);
+                Document document = originalSolution.GetDocument(documentId);
+                SyntaxNode syntaxRoot = await GetSyntaxRootAndFilter(document, cancellationToken);
                 if (syntaxRoot == null)
                 {
                     continue;
                 }
 
                 StartDocument();
-                var newRoot = RunSyntaxPass(syntaxRoot, document.Project.Language);
+                SyntaxNode newRoot = RunSyntaxPass(syntaxRoot, document.Project.Language);
                 EndDocument(document);
 
                 if (newRoot != syntaxRoot)
@@ -288,7 +283,7 @@ namespace Microsoft.DotNet.CodeFormatting
 
         private SyntaxNode RunSyntaxPass(SyntaxNode root, string languageName)
         {
-            foreach (var rule in GetOrderedRules(_syntaxRules))
+            foreach (ISyntaxFormattingRule rule in GetOrderedRules(_syntaxRules))
             {
                 if (rule.SupportsLanguage(languageName))
                 {
@@ -302,7 +297,7 @@ namespace Microsoft.DotNet.CodeFormatting
         private async Task<Solution> RunLocalSemanticPass(Solution solution, IReadOnlyList<DocumentId> documentIds, CancellationToken cancellationToken)
         {
             FormatLogger.WriteLine("\tLocal Semantic Pass");
-            foreach (var localSemanticRule in GetOrderedRules(_localSemanticRules))
+            foreach (ILocalSemanticFormattingRule localSemanticRule in GetOrderedRules(_localSemanticRules))
             {
                 solution = await RunLocalSemanticPass(solution, documentIds, localSemanticRule, cancellationToken);
             }
@@ -317,18 +312,18 @@ namespace Microsoft.DotNet.CodeFormatting
                 FormatLogger.WriteLine("  {0}", localSemanticRule.GetType().Name);
             }
 
-            var currentSolution = originalSolution;
-            foreach (var documentId in documentIds)
+            Solution currentSolution = originalSolution;
+            foreach (DocumentId documentId in documentIds)
             {
-                var document = originalSolution.GetDocument(documentId);
-                var syntaxRoot = await GetSyntaxRootAndFilter(localSemanticRule, document, cancellationToken);
+                Document document = originalSolution.GetDocument(documentId);
+                SyntaxNode syntaxRoot = await GetSyntaxRootAndFilter(localSemanticRule, document, cancellationToken);
                 if (syntaxRoot == null)
                 {
                     continue;
                 }
 
                 StartDocument();
-                var newRoot = await localSemanticRule.ProcessAsync(document, syntaxRoot, cancellationToken);
+                SyntaxNode newRoot = await localSemanticRule.ProcessAsync(document, syntaxRoot, cancellationToken);
                 EndDocument(document);
 
                 if (syntaxRoot != newRoot)
@@ -343,7 +338,7 @@ namespace Microsoft.DotNet.CodeFormatting
         private async Task<Solution> RunGlobalSemanticPass(Solution solution, IReadOnlyList<DocumentId> documentIds, CancellationToken cancellationToken)
         {
             FormatLogger.WriteLine("\tGlobal Semantic Pass");
-            foreach (var globalSemanticRule in GetOrderedRules(_globalSemanticRules))
+            foreach (IGlobalSemanticFormattingRule globalSemanticRule in GetOrderedRules(_globalSemanticRules))
             {
                 solution = await RunGlobalSemanticPass(solution, documentIds, globalSemanticRule, cancellationToken);
             }
@@ -358,10 +353,10 @@ namespace Microsoft.DotNet.CodeFormatting
                 FormatLogger.WriteLine("  {0}", globalSemanticRule.GetType().Name);
             }
 
-            foreach (var documentId in documentIds)
+            foreach (DocumentId documentId in documentIds)
             {
-                var document = solution.GetDocument(documentId);
-                var syntaxRoot = await GetSyntaxRootAndFilter(globalSemanticRule, document, cancellationToken);
+                Document document = solution.GetDocument(documentId);
+                SyntaxNode syntaxRoot = await GetSyntaxRootAndFilter(globalSemanticRule, document, cancellationToken);
                 if (syntaxRoot == null)
                 {
                     continue;
