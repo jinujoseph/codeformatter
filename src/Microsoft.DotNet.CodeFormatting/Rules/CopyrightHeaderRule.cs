@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
@@ -45,7 +43,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             private bool HasCopyrightHeader(SyntaxNode syntaxNode)
             {
-                var existingHeader = GetExistingHeader(syntaxNode.GetLeadingTrivia());
+                List<string> existingHeader = GetExistingHeader(syntaxNode.GetLeadingTrivia());
                 return SequnceStartsWith(_header, existingHeader);
             }
 
@@ -63,14 +61,13 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             private SyntaxNode AddCopyrightHeader(SyntaxNode syntaxNode)
             {
                 var list = new List<SyntaxTrivia>();
-                foreach (var headerLine in _header)
+                foreach (string headerLine in _header)
                 {
                     list.Add(CreateLineComment(headerLine));
                     list.Add(CreateNewLine());
                 }
                 list.Add(CreateNewLine());
-
-                var triviaList = RemoveExistingHeader(syntaxNode.GetLeadingTrivia());
+                SyntaxTriviaList triviaList = RemoveExistingHeader(syntaxNode.GetLeadingTrivia());
                 var i = 0;
                 MovePastBlankLines(triviaList, ref i);
 

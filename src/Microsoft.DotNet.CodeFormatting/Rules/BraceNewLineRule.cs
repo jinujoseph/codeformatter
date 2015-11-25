@@ -3,13 +3,8 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.CodeFormatting.Rules
 {
@@ -40,11 +35,9 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
         /// </summary>
         private static SyntaxNode FixOpenBraces(SyntaxNode syntaxNode)
         {
-            // Look for the open brace tokens that are followed by empty blank lines.  The new lines will
-            // be attached to the next nodes, not the open brace token.
-            var tokensToReplace = syntaxNode.DescendantTokens().Where((token) =>
+            IEnumerable<SyntaxToken> tokensToReplace = syntaxNode.DescendantTokens().Where((token) =>
                 {
-                    var nextToken = token.GetNextToken();
+                    SyntaxToken nextToken = token.GetNextToken();
                     if (token.Kind() != SyntaxKind.OpenBraceToken || !nextToken.HasLeadingTrivia)
                     {
                         return false;
@@ -75,10 +68,9 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 return token.WithLeadingTrivia(SyntaxTriviaList.Empty);
             }
 
-            // Remove all of the new lines at the top
-            var triviaList = token.LeadingTrivia;
+            SyntaxTriviaList triviaList = token.LeadingTrivia;
             var list = new List<SyntaxTrivia>(triviaList.Count);
-            var index = MovePastSimpleNewLines(triviaList, 0);
+            int index = MovePastSimpleNewLines(triviaList, 0);
 
             while (index < triviaList.Count)
             {
@@ -86,7 +78,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 index++;
             }
 
-            var newTriviaList = SyntaxFactory.TriviaList(list);
+            SyntaxTriviaList newTriviaList = SyntaxFactory.TriviaList(list);
             return token.WithLeadingTrivia(newTriviaList);
         }
 
@@ -97,7 +89,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
         /// </summary>
         private static SyntaxNode FixCloseBraces(SyntaxNode syntaxNode)
         {
-            var tokensToReplace = syntaxNode.DescendantTokens().Where((token) =>
+            IEnumerable<SyntaxToken> tokensToReplace = syntaxNode.DescendantTokens().Where((token) =>
                 {
                     return
                         token.Kind() == SyntaxKind.CloseBraceToken &&
@@ -115,7 +107,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 return token;
             }
 
-            var triviaList = token.LeadingTrivia;
+            SyntaxTriviaList triviaList = token.LeadingTrivia;
             if (triviaList.All(x => x.IsKind(SyntaxKind.WhitespaceTrivia) || x.IsKind(SyntaxKind.EndOfLineTrivia)))
             {
                 // Simplest case.  It's all new lines and white space.  
@@ -152,8 +144,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             var list = new List<SyntaxTrivia>(triviaList.Count);
             list.Add(SyntaxUtil.GetBestNewLineTrivia(triviaList));
-
-            var index = MovePastSimpleNewLines(triviaList, 0);
+            int index = MovePastSimpleNewLines(triviaList, 0);
             while (index < triviaList.Count)
             {
                 list.Add(triviaList[index]);
@@ -170,11 +161,11 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
         /// </summary>
         private static SyntaxTriviaList RemoveNewLinesFromBottom(SyntaxTriviaList triviaList)
         {
-            var index = triviaList.Count - 1;
+            int index = triviaList.Count - 1;
             var searching = true;
             while (index >= 0 && searching)
             {
-                var current = triviaList[index];
+                SyntaxTrivia current = triviaList[index];
                 switch (current.Kind())
                 {
                     case SyntaxKind.WhitespaceTrivia:
