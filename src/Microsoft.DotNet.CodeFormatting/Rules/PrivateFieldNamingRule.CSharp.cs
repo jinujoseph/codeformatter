@@ -1,14 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -37,12 +31,12 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
         /// </summary>
         internal sealed class CSharpPrivateFieldAnnotationsRewriter : CSharpSyntaxRewriter
         {
-            private int _count;
+            private readonly int _count;
 
             internal static SyntaxNode AddAnnotations(SyntaxNode node, out int count)
             {
                 var rewriter = new CSharpPrivateFieldAnnotationsRewriter();
-                var newNode = rewriter.Visit(node);
+                SyntaxNode newNode = rewriter.Visit(node);
                 count = rewriter._count;
                 return newNode;
             }
@@ -53,7 +47,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 if (NeedsRewrite(node, out isInstance))
                 {
                     var list = new List<VariableDeclaratorSyntax>(node.Declaration.Variables.Count);
-                    foreach (var v in node.Declaration.Variables)
+                    foreach (VariableDeclaratorSyntax v in node.Declaration.Variables)
                     {
                         if (IsGoodPrivateFieldName(v.Identifier.Text, isInstance))
                         {
@@ -66,7 +60,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                         }
                     }
 
-                    var declaration = node.Declaration.WithVariables(SyntaxFactory.SeparatedList(list));
+                    VariableDeclarationSyntax declaration = node.Declaration.WithVariables(SyntaxFactory.SeparatedList(list));
                     node = node.WithDeclaration(declaration);
 
                     return node;
@@ -82,7 +76,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                     return false;
                 }
 
-                foreach (var v in fieldSyntax.Declaration.Variables)
+                foreach (VariableDeclaratorSyntax v in fieldSyntax.Declaration.Variables)
                 {
                     if (!IsGoodPrivateFieldName(v.Identifier.ValueText, isInstance))
                     {
@@ -97,7 +91,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             {
                 var isPrivate = true;
                 isInstance = true;
-                foreach (var modifier in fieldSyntax.Modifiers)
+                foreach (SyntaxToken modifier in fieldSyntax.Modifiers)
                 {
                     switch (modifier.Kind())
                     {

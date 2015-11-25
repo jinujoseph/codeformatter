@@ -1,11 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.ComponentModel.Composition;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -27,18 +23,14 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             var root = syntaxNode as CompilationUnitSyntax;
             if (root == null)
                 return syntaxNode;
-
-            // This rule can only be done safely as a syntax transformation when there is a single namespace
-            // declaration in the file.  Once there is more than one it opens up the possibility of introducing
-            // ambiguities to essentially make using directives global which were previously local.
-            var namespaceDeclarationList = root.Members.OfType<NamespaceDeclarationSyntax>().ToList();
+            System.Collections.Generic.List<NamespaceDeclarationSyntax> namespaceDeclarationList = root.Members.OfType<NamespaceDeclarationSyntax>().ToList();
             if (namespaceDeclarationList.Count != 1)
             {
                 return syntaxNode;
             }
 
-            var namespaceDeclaration = namespaceDeclarationList.Single();
-            var usingList = namespaceDeclaration.Usings;
+            NamespaceDeclarationSyntax namespaceDeclaration = namespaceDeclarationList.Single();
+            SyntaxList<UsingDirectiveSyntax> usingList = namespaceDeclaration.Usings;
             if (usingList.Count == 0)
             {
                 return syntaxNode;
@@ -65,7 +57,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 return syntaxNode;
             }
 
-            var newRoot = root;
+            CompilationUnitSyntax newRoot = root;
             newRoot = newRoot.ReplaceNode(namespaceDeclaration, namespaceDeclaration.WithUsings(SyntaxFactory.List<UsingDirectiveSyntax>()));
             newRoot = newRoot.WithUsings(newRoot.Usings.AddRange(namespaceDeclaration.Usings));
 

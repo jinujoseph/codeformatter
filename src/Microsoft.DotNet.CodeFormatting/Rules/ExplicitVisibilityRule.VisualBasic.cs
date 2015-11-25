@@ -8,9 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.CodeFormatting.Rules
 {
@@ -70,7 +68,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             public override SyntaxNode VisitModuleBlock(ModuleBlockSyntax node)
             {
-                var savedInModule = _inModule;
+                bool savedInModule = _inModule;
                 try
                 {
                     _inModule = true;
@@ -142,10 +140,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                     node.Modifiers,
                     (x, l) => x.WithModifiers(l),
                     () => SyntaxKind.PrivateKeyword);
-
-                // Now that the field has an explicit modifier remove any Dim modifiers on it 
-                // as it is now redundant
-                var list = node.Modifiers;
+                SyntaxTokenList list = node.Modifiers;
                 var i = 0;
                 while (i < list.Count)
                 {
@@ -206,7 +201,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                     _semanticModel = _document.GetSemanticModelAsync(_cancellationToken).Result;
                 }
 
-                var symbol = _semanticModel.GetDeclaredSymbol(originalTypeBlockSyntax, _cancellationToken);
+                INamedTypeSymbol symbol = _semanticModel.GetDeclaredSymbol(originalTypeBlockSyntax, _cancellationToken);
                 if (symbol == null)
                 {
                     return null;
@@ -233,7 +228,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             private static SyntaxKind? GetVisibilityModifier(SyntaxTokenList list)
             {
-                foreach (var token in list)
+                foreach (SyntaxToken token in list)
                 {
                     if (SyntaxFacts.IsAccessibilityModifier(token.Kind()))
                     {
@@ -246,10 +241,10 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
 
             private static bool IsNestedDeclaration(SyntaxNode node)
             {
-                var current = node.Parent;
+                SyntaxNode current = node.Parent;
                 while (current != null)
                 {
-                    var kind = current.Kind();
+                    SyntaxKind kind = current.Kind();
                     if (kind == SyntaxKind.ClassBlock || kind == SyntaxKind.StructureBlock || kind == SyntaxKind.InterfaceBlock)
                     {
                         return true;
@@ -265,15 +260,13 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             {
                 Func<SyntaxKind, T> withFirstModifier = (visibilityKind) =>
                     {
-                        var leadingTrivia = keyword.LeadingTrivia;
+                        SyntaxTriviaList leadingTrivia = keyword.LeadingTrivia;
                         node = withKeyword(node, keyword.WithLeadingTrivia());
-
-                        var visibilityToken = SyntaxFactory.Token(
+                        SyntaxToken visibilityToken = SyntaxFactory.Token(
                             leadingTrivia,
                             visibilityKind,
                             SyntaxFactory.TriviaList(SyntaxFactory.SyntaxTrivia(SyntaxKind.WhitespaceTrivia, " ")));
-
-                        var modifierList = SyntaxFactory.TokenList(visibilityToken);
+                        SyntaxTokenList modifierList = SyntaxFactory.TokenList(visibilityToken);
                         return withModifiers(node, modifierList);
                     };
 
@@ -289,15 +282,13 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             {
                 Func<SyntaxKind, T> withFirstModifier = (visibilityKind) =>
                     {
-                        var leadingTrivia = node.GetLeadingTrivia();
+                        SyntaxTriviaList leadingTrivia = node.GetLeadingTrivia();
                         node = node.WithLeadingTrivia();
-
-                        var visibilityToken = SyntaxFactory.Token(
+                        SyntaxToken visibilityToken = SyntaxFactory.Token(
                             leadingTrivia,
                             visibilityKind,
                             SyntaxFactory.TriviaList(SyntaxFactory.SyntaxTrivia(SyntaxKind.WhitespaceTrivia, " ")));
-
-                        var modifierList = SyntaxFactory.TokenList(visibilityToken);
+                        SyntaxTokenList modifierList = SyntaxFactory.TokenList(visibilityToken);
                         return withModifiers(node, modifierList);
                     };
 
@@ -330,8 +321,8 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                 }
                 else
                 {
-                    var leadingTrivia = originalModifiers[0].LeadingTrivia;
-                    var visibilityToken = SyntaxFactory.Token(
+                    SyntaxTriviaList leadingTrivia = originalModifiers[0].LeadingTrivia;
+                    SyntaxToken visibilityToken = SyntaxFactory.Token(
                         leadingTrivia,
                         visibilityKind,
                         SyntaxFactory.TriviaList(SyntaxFactory.SyntaxTrivia(SyntaxKind.WhitespaceTrivia, " ")));
