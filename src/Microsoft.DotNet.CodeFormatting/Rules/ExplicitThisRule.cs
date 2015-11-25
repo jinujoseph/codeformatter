@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -41,7 +37,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
             public override SyntaxNode VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
             {
                 node = (MemberAccessExpressionSyntax)base.VisitMemberAccessExpression(node);
-                var name = node.Name.Identifier.ValueText;
+                string name = node.Name.Identifier.ValueText;
                 if (node.Expression != null &&
                     node.Expression.Kind() == SyntaxKind.ThisExpression &&
                     IsPrivateField(node))
@@ -60,7 +56,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
                     _semanticModel = _document.GetSemanticModelAsync(_cancellationToken).Result;
                 }
 
-                var symbolInfo = _semanticModel.GetSymbolInfo(memberSyntax, _cancellationToken);
+                SymbolInfo symbolInfo = _semanticModel.GetSymbolInfo(memberSyntax, _cancellationToken);
                 if (symbolInfo.Symbol != null && symbolInfo.Symbol.Kind == SymbolKind.Field)
                 {
                     var field = (IFieldSymbol)symbolInfo.Symbol;
@@ -74,7 +70,7 @@ namespace Microsoft.DotNet.CodeFormatting.Rules
         public async Task<SyntaxNode> ProcessAsync(Document document, SyntaxNode syntaxNode, CancellationToken cancellationToken)
         {
             var rewriter = new ExplicitThisRewriter(document, cancellationToken);
-            var newNode = rewriter.Visit(syntaxNode);
+            SyntaxNode newNode = rewriter.Visit(syntaxNode);
             if (!rewriter.AddedAnnotations)
             {
                 return syntaxNode;

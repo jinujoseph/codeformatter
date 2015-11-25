@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.CodeFormatting
 {
     public sealed class ResponseFileWorkspace : Workspace
     {
-        private static Encoding s_utf8WithoutBom = new UTF8Encoding(false);
+        private static readonly Encoding s_utf8WithoutBom = new UTF8Encoding(false);
 
         private ResponseFileWorkspace()
             : base(DesktopMefHostServices.DefaultServices, "Custom")
@@ -29,8 +29,7 @@ namespace Microsoft.DotNet.CodeFormatting
             // This line deserves better error handling, but the tools current model is just throwing exception for most errors.
             // Issue: #90
             string rspContents = File.ReadAllText(responseFile);
-
-            var projectInfo = CommandLineProject.CreateProjectInfo(
+            ProjectInfo projectInfo = CommandLineProject.CreateProjectInfo(
                 projectName: Path.GetFileNameWithoutExtension(responseFile),
                 language: language,
                 commandLine: rspContents,
@@ -49,7 +48,7 @@ namespace Microsoft.DotNet.CodeFormatting
 
         protected override void ApplyDocumentTextChanged(DocumentId documentId, SourceText text)
         {
-            var document = this.CurrentSolution.GetDocument(documentId);
+            Document document = this.CurrentSolution.GetDocument(documentId);
             if (document != null)
             {
                 try

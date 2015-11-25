@@ -1,4 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.CodeFormatting;
 using System;
 using System.Collections.Generic;
@@ -122,7 +125,7 @@ namespace CodeFormatter
         private const string RuleEnabledSwitch1 = "/rule+:";
         private const string RuleEnabledSwitch2 = "/rule:";
         private const string RuleDisabledSwitch = "/rule-:";
-        private const string Usage = 
+        private const string Usage =
 @"CodeFormatter [/file:<filename>] [/lang:<language>] [/c:<config>[,<config>...]>]
     [/copyright:<file> | /nocopyright] [/tables] [/nounicode] 
     [/rule(+|-):rule1,rule2,...]  [/verbose]
